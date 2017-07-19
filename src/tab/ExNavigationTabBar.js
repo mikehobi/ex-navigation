@@ -6,6 +6,7 @@ import {
   TouchableNativeFeedback,
   Text,
   View,
+  Animated,
 } from 'react-native';
 
 import { unsupportedNativeView } from '../ExUnsupportedNativeView';
@@ -33,7 +34,12 @@ export default class ExNavigationTabBar extends React.Component {
     let backgroundColor = isTranslucent ? 'rgba(255,255,255,0.5)' : '#fefefe';
 
     return (
-      <View style={[styles.container, { height }]}>
+      <Animated.View style={[
+        styles.container,
+        { height },
+        { transform: [{ translateY: this.props.translateY }] },
+      ]}
+      >
         {isTranslucent &&
           <BlurView style={[styles.translucentUnderlay, { height }]} />}
 
@@ -47,7 +53,7 @@ export default class ExNavigationTabBar extends React.Component {
             {this.renderTabItems()}
           </View>
         </View>
-      </View>
+      </Animated.View>
     );
   }
 

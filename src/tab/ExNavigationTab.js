@@ -3,7 +3,7 @@
  */
 
 import React, { Children } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, Animated, Easing } from 'react-native';
 import PureComponent from '../utils/PureComponent';
 import StaticContainer from 'react-static-container';
 
@@ -117,14 +117,57 @@ class ExNavigationTab extends PureComponent<any, Props, State> {
   constructor(props, context) {
     super(props, context);
 
+    this.tabBarHeight =
+      props.tabBarHeight || TabBarComponent.defaultHeight || 0;
+
     this.state = {
       tabItems: [],
       id: props.id,
       navigatorUID: props.navigatorUID,
       parentNavigatorUID: context.parentNavigatorUID,
       renderedTabKeys: [],
+      tabMarginBottom:
+      props.translucent
+        ? 0
+        : props.isTabBarCollapsed
+          ? 0
+          : this.tabBarHeight,
     };
+
+    this.animatedTabBarValue.setValue(props.isTabBarCollapsed ? 0 : 1)
+
+    this.animatedTabBarTranslateY = this.animatedTabBarValue.interpolate({
+      inputRange: [0, 1],
+      outputRange: [this.tabBarHeight, 0],
+    })
   }
+
+  animatedTabBarValue = new Animated.Value(1) // 0 = collapsed, 1 = expanded
+
+  componentWillUpdate(nextProps) {
+    if (nextProps.isTabBarCollapsed !== this.props.isTabBarCollapsed) {
+      if (nextProps.isTabBarCollapsed) {
+        this.setState({ tabMarginBottom: 0 }, this.collapseAnimation.start)
+      }
+      else {
+        this.expandAnimation.start(() => {
+          this.setState({ tabMarginBottom: this.tabBarHeight })
+        })
+      }
+    }
+  }
+
+  collapseAnimation = Animated.timing(this.animatedTabBarValue, {
+    toValue: 0,
+    duration: 200,
+    easing: Easing.inOut(Easing.quad),
+  })
+
+  expandAnimation = Animated.timing(this.animatedTabBarValue, {
+    toValue: 1,
+    duration: 200,
+    easing: Easing.inOut(Easing.quad),
+  })
 
   render() {
     if (!this.props.children || !this.state.tabItems) {
@@ -141,6 +184,10 @@ class ExNavigationTab extends PureComponent<any, Props, State> {
       items: this.state.tabItems,
       height: this.props.tabBarHeight,
       translucent: this.props.translucent,
+      translateY:
+      this.props.translucent
+        ? 0
+        : this.animatedTabBarTranslateY,
       style: [
         this.props.tabBarStyle,
         this.props.tabBarColor
@@ -152,14 +199,12 @@ class ExNavigationTab extends PureComponent<any, Props, State> {
     const tabBar = this.props.renderTabBar(tabBarProps);
     const TabBarComponent = tabBar.type;
     // Get the tab bar's height from a static property on the class
-    const tabBarHeight =
-      this.props.tabBarHeight || TabBarComponent.defaultHeight || 0;
     const isTranslucent = this.props.translucent;
 
     return (
       <View style={styles.container}>
         <View
-          style={{ flex: 1, marginBottom: isTranslucent ? 0 : tabBarHeight }}>
+          style={{ flex: 1, marginBottom: this.state.tabMarginBottom }}>
           {this.renderTabs()}
         </View>
         {tabBar}
