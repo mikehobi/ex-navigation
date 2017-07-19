@@ -160,12 +160,14 @@ class ExNavigationTab extends PureComponent<any, Props, State> {
   collapseAnimation = Animated.timing(this.animatedTabBarValue, {
     toValue: 0,
     duration: 200,
+    useNativeDriver: true,
     easing: Easing.inOut(Easing.quad),
   })
 
   expandAnimation = Animated.timing(this.animatedTabBarValue, {
     toValue: 1,
     duration: 200,
+    useNativeDriver: true,
     easing: Easing.inOut(Easing.quad),
   })
 
