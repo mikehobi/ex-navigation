@@ -1,6 +1,6 @@
 {
   "name": "@instrument/ex-navigation",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "description": "Route-centric navigation library for React Native.",
   "main": "./src/ExNavigation.js",
   "files": [
